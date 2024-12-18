@@ -1,0 +1,19 @@
+/* Estilo para dispositivos móviles */
+@media (max-width: 767px) {
+    body {
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+        background-color: #d0d0d0;
+    }
+
+    header {
+        padding: 10px 20px;
+        background-color: #3c3c3c;
+        color: #fff;
+    }
+
+    .container {
+        width: 100%;
+        padding: 10px;
+    }
+}

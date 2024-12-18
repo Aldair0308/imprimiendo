@@ -1,0 +1,22 @@
+/* Archivo 1: styles.css - Estilos generales con diseño responsivo para Laravel */
+
+/* Estilo para dispositivos grandes (PC) */
+@media (min-width: 1025px) {
+    body {
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+        background-color: #f0f0f0;
+    }
+
+    header {
+        padding: 20px 40px;
+        background-color: #1e1e1e;
+        color: #fff;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+}

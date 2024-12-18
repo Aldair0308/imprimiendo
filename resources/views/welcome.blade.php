@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador de Código QR</title>
+    <link rel="stylesheet" href="/css/estilos-responsive.css">
+    <link rel="stylesheet" href="/css/contenedores-pc.css">
+    <link rel="stylesheet" href="/css/contenedores-movil.css">
     <style>
         .qr-container {
             position: relative;
