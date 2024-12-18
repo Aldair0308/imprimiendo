@@ -24,7 +24,7 @@
 </head>
 
 <body>
-    @if (isset($qrCode))
+    {{-- @if (isset($qrCode))
         <h3>Código QR Generado:</h3>
         <div class="qr-container">
             <img src="{{ $qrCode }}" alt="Código QR" style="width: 300px;">
@@ -32,7 +32,7 @@
         </div>
     @endif
 
-    <x-qr />
+    <x-qr /> --}}
 
     <h1 style="text-align: center;">Impresión de PDF</h1>
     <x-subir-pdf />
