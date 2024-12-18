@@ -1,0 +1,177 @@
+/* Estilos generales */
+body {
+    font-family: "Arial", sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* Títulos */
+h3 {
+    font-size: 1.8rem;
+    color: #007bff;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+}
+
+/* Formularios */
+form {
+    background: #fff;
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 500px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+form:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Etiquetas */
+label {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+/* Entradas */
+input[type="file"],
+input[type="text"],
+select {
+    width: 100%;
+    padding: 0.8rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input[type="file"]:focus,
+input[type="text"]:focus,
+select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    outline: none;
+}
+
+/* Botones */
+button {
+    display: inline-block;
+    padding: 0.8rem 1.2rem;
+    font-size: 1rem;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+}
+
+button:active {
+    background-color: #004085;
+    transform: scale(0.95);
+}
+
+/* Mensajes de éxito y error */
+p {
+    font-size: 1rem;
+    text-align: center;
+    margin-top: 1rem;
+}
+
+p.success {
+    color: #28a745;
+    animation: fade-in 0.5s ease-in-out;
+}
+
+p.error {
+    color: #dc3545;
+    animation: fade-in 0.5s ease-in-out;
+}
+
+/* Animaciones */
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Rango específico */
+#rango-input {
+    display: none;
+    animation: slide-down 0.3s ease-in-out;
+}
+
+@keyframes slide-down {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsividad */
+@media (max-width: 600px) {
+    form {
+        padding: 1.5rem;
+    }
+
+    h3 {
+        font-size: 1.5rem;
+    }
+}
+/* Clases para los diferentes estados */
+.success {
+    color: #28a745;
+    font-weight: bold;
+    animation: fade-in 0.5s ease-in-out;
+}
+
+.warning {
+    color: #ffc107;
+    font-weight: bold;
+    animation: fade-in 0.5s ease-in-out;
+}
+
+.info {
+    color: #17a2b8;
+    font-weight: bold;
+    animation: fade-in 0.5s ease-in-out;
+}
+
+.primary {
+    color: #007bff;
+    font-weight: bold;
+    animation: fade-in 0.5s ease-in-out;
+}
+
+.error {
+    color: #dc3545;
+    font-weight: bold;
+    animation: fade-in 0.5s ease-in-out;
+}
