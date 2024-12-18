@@ -33,6 +33,9 @@
     @endif
 
     <x-qr />
+
+    <h1 style="text-align: center;">Impresión de PDF</h1>
+    <x-subir-pdf />
 </body>
 
 </html>

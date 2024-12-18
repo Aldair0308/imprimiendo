@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use App\Http\Controllers\PdfController;
 
 
 /*
@@ -15,6 +15,10 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 |
 */
 
+
+Route::post('/imprimir-pdf', [PdfController::class, 'imprimir'])->name('pdf.imprimir');
+
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -27,7 +31,3 @@ Route::post('/generar-qr', function (\Illuminate\Http\Request $request) {
 
     return view('welcome', ['qrCode' => trim($qrCode), 'iconPath' => asset('images/icon.webp')]);
 })->name('generar.qr');
-
-
-
-
