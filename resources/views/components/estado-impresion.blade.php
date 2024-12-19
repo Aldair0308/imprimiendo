@@ -1,4 +1,4 @@
-@if ($estado)
+{{-- @if ($estado)
     <p
         class="
         @if ($estado === 'impresion en proceso') success
@@ -9,4 +9,4 @@
     ">
         {{ ucfirst($estado) }}
     </p>
-@endif
+@endif --}}
