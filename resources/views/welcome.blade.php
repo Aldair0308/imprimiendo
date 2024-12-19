@@ -37,7 +37,10 @@
 
     <x-qr /> --}}
 
-    <x-subir-pdf />
+    {{-- <x-subir-pdf /> --}}
+
+    @include('files.index')
+
 </body>
 
 </html>

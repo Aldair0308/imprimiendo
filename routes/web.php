@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PdfController;
+use App\Http\Controllers\FileController;
+
 
 
 /*
@@ -29,5 +31,9 @@ Route::post('/generar-qr', function (\Illuminate\Http\Request $request) {
     // Generar QR usando Node.js directamente desde PHP
     $qrCode = shell_exec("node -e \"const QRCode = require('qrcode'); QRCode.toDataURL('$texto', { width: 1000,  }).then(url => console.log(url)).catch(err => console.error(err));\"");
 
-    return view('welcome', ['qrCode' => trim($qrCode), 'iconPath' => asset('images/icon.webp')]);
+    return view('welcome', ['qrCode' => trim($qrCode), 'iconPath' => asset('images/pueblo.webp')]);
 })->name('generar.qr');
+
+
+Route::get('/files', [FileController::class, 'index'])->name('files.index');
+Route::post('/files/upload', [FileController::class, 'upload'])->name('files.upload');
