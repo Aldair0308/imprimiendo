@@ -28,22 +28,22 @@ class SessionService
             $sessionCode = $this->generateUniqueSessionCode();
             $expiresAt = Carbon::now()->addHours(2); // Sesión válida por 2 horas
             
-            $session = Session::create([
-                'session_code' => $sessionCode,
-                'status' => 'active',
-                'client_ip' => $clientIp,
-                'created_at' => Carbon::now(),
-                'expires_at' => $expiresAt,
-                'max_files' => 10,
-                'max_total_size' => 50 * 1024 * 1024, // 50MB
-                'qr_generated' => false
-            ]);
+            $session = new Session();
+            $session->session_code = $sessionCode;
+            $session->status = 'active';
+            $session->client_ip = $clientIp;
+            $session->created_at = Carbon::now();
+            $session->expires_at = $expiresAt;
+            $session->max_files = 10;
+            $session->max_total_size = 50 * 1024 * 1024; // 50MB
+            $session->qr_generated = false;
+            $session->save();
             
             // Generar código QR
             $this->generateQRCode($session);
             
             Log::info('New session created', [
-                'session_id' => $session->_id,
+                'session_id' => $session->id,
                 'session_code' => $sessionCode,
                 'client_ip' => $clientIp
             ]);
@@ -75,6 +75,10 @@ class SessionService
     {
         try {
             $qrUrl = url("/session/{$session->session_code}");
+            Log::info('Generando QR para sesión', [
+                'session_code' => $session->session_code,
+                'qr_url' => $qrUrl
+            ]);
             
             // Crear instancia de QrCode con Endroid
             $qrCode = new QrCode($qrUrl);
@@ -87,10 +91,27 @@ class SessionService
             
             // Obtener el contenido SVG
             $svgContent = $result->getString();
+            Log::info('SVG generado', ['content_length' => strlen($svgContent)]);
             
             // Guardar QR en storage
             $qrPath = "qr-codes/{$session->session_code}.svg";
-            \Storage::disk('public')->put($qrPath, $svgContent);
+            $saved = \Storage::disk('public')->put($qrPath, $svgContent);
+            
+            if (!$saved) {
+                throw new \Exception('No se pudo guardar el archivo SVG');
+            }
+            
+            // Verificar que el archivo se guardó correctamente
+            $fullPath = storage_path("app/public/{$qrPath}");
+            if (!file_exists($fullPath)) {
+                throw new \Exception("El archivo QR no se guardó en: {$fullPath}");
+            }
+            
+            Log::info('QR guardado exitosamente', [
+                'path' => $qrPath,
+                'full_path' => $fullPath,
+                'file_size' => filesize($fullPath)
+            ]);
             
             // Actualizar sesión con información del QR
             $session->update([
@@ -104,8 +125,11 @@ class SessionService
             
         } catch (\Exception $e) {
             Log::error('Error generating QR code: ' . $e->getMessage(), [
-                'session_id' => $session->_id
+                'session_id' => $session->id,
+                'session_code' => $session->session_code,
+                'trace' => $e->getTraceAsString()
             ]);
+            return null;
         }
     }
 
@@ -152,7 +176,7 @@ class SessionService
         ]);
         
         Log::info('Session extended', [
-            'session_id' => $session->_id,
+            'session_id' => $session->id,
             'new_expiration' => $newExpirationTime
         ]);
         
@@ -178,7 +202,7 @@ class SessionService
         $session->update($updateData);
         
         Log::info('Session status updated', [
-            'session_id' => $session->_id,
+            'session_id' => $session->id,
             'old_status' => $session->status,
             'new_status' => $status
         ]);
@@ -191,7 +215,7 @@ class SessionService
      */
     public function getSessionFiles(Session $session)
     {
-        return File::where('session_id', $session->_id)
+        return File::where('session_id', $session->id)
                   ->orderBy('uploaded_at', 'desc')
                   ->get();
     }
@@ -201,8 +225,8 @@ class SessionService
      */
     public function checkSessionLimits(Session $session, $newFileSize = 0)
     {
-        $currentFiles = File::where('session_id', $session->_id)->count();
-        $currentTotalSize = File::where('session_id', $session->_id)->sum('file_size');
+        $currentFiles = File::where('session_id', $session->id)->count();
+        $currentTotalSize = File::where('session_id', $session->id)->sum('file_size');
         
         $limits = [
             'can_add_file' => true,
@@ -296,7 +320,7 @@ class SessionService
         // En un entorno real, esto usaría un sistema de colas como Redis
         // Por ahora, solo registramos la programación
         Log::info('File cleanup scheduled', [
-            'session_id' => $session->_id,
+            'session_id' => $session->id,
             'cleanup_at' => Carbon::now()->addHours($hoursDelay)
         ]);
     }
@@ -320,7 +344,7 @@ class SessionService
                 
             } catch (\Exception $e) {
                 Log::error('Error cleaning expired session: ' . $e->getMessage(), [
-                    'session_id' => $session->_id
+                    'session_id' => $session->id
                 ]);
             }
         }
@@ -398,7 +422,7 @@ class SessionService
         $this->generateQRCode($session);
         
         Log::info('QR code regenerated', [
-            'session_id' => $session->_id
+            'session_id' => $session->id
         ]);
         
         return $session->fresh();

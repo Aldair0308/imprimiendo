@@ -37,11 +37,29 @@ class HomeController extends Controller
                                        ->with('status')
                                        ->get();
             
+            // Verificar que el QR se haya generado correctamente
+            $qrCodeUrl = null;
+            if ($session->qr_code_path) {
+                $fullPath = storage_path('app/public/' . $session->qr_code_path);
+                Log::info('Verificando QR en HomeController', [
+                    'session_code' => $session->session_code,
+                    'qr_path' => $session->qr_code_path,
+                    'full_path' => $fullPath,
+                    'file_exists' => file_exists($fullPath)
+                ]);
+                
+                if (file_exists($fullPath)) {
+                    $qrCodeUrl = asset('storage/' . $session->qr_code_path);
+                } else {
+                    Log::warning('Archivo QR no encontrado', ['path' => $fullPath]);
+                }
+            }
+            
             return view('home.index', [
                 'session' => $session,
                 'systemStatus' => $systemStatus,
                 'availablePrinters' => $availablePrinters,
-                'qrCodeUrl' => asset('storage/' . $session->qr_code_path)
+                'qrCodeUrl' => $qrCodeUrl
             ]);
             
         } catch (\Exception $e) {

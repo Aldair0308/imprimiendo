@@ -11,7 +11,7 @@ class PrinterMonitorService
 {
     private $multiPrinterService;
     
-    public function __construct(MultiPrinterService $multiPrinterService)
+    public function __construct(MultiPrinterService $multiPrinterService = null)
     {
         $this->multiPrinterService = $multiPrinterService;
     }

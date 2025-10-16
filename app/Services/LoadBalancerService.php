@@ -13,8 +13,8 @@ class LoadBalancerService
     private $printerMonitorService;
     
     public function __construct(
-        MultiPrinterService $multiPrinterService,
-        PrinterMonitorService $printerMonitorService
+        MultiPrinterService $multiPrinterService = null,
+        PrinterMonitorService $printerMonitorService = null
     ) {
         $this->multiPrinterService = $multiPrinterService;
         $this->printerMonitorService = $printerMonitorService;

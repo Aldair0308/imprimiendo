@@ -296,9 +296,47 @@
             document.getElementById('loading-overlay').classList.add('hidden');
         };
 
-        window.showNotification = function(message, type = 'success') {
-            // Implementar sistema de notificaciones toast
-            console.log(`${type.toUpperCase()}: ${message}`);
+        window.showNotification = function(message, type = 'info') {
+            // Crear elemento de notificación
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm transition-all duration-300 transform translate-x-full`;
+            
+            // Estilos según el tipo
+            const typeClasses = {
+                'success': 'bg-green-500 text-white',
+                'error': 'bg-red-500 text-white',
+                'warning': 'bg-yellow-500 text-white',
+                'info': 'bg-blue-500 text-white'
+            };
+            
+            notification.className += ' ' + (typeClasses[type] || typeClasses['info']);
+            notification.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Animar entrada
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Auto-remover después de 5 segundos
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, 300);
+            }, 5000);
         };
 
         // Mobile menu toggle

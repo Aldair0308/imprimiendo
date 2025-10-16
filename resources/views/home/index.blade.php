@@ -64,16 +64,7 @@
                 <!-- QR Code Display -->
                 <div class="bg-white p-6 rounded-xl mb-6 flex items-center justify-center">
                     <div id="qr-code-container" class="text-center">
-                        @if(isset($qrCodeUrl) && $qrCodeUrl)
-                            <img src="{{ $qrCodeUrl }}" alt="Código QR de sesión" class="w-48 h-48 mx-auto">
-                        @else
-                            <div class="w-48 h-48 bg-gray-100 rounded-lg flex items-center justify-center">
-                                <div class="text-center">
-                                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-blue mx-auto mb-2"></div>
-                                    <span class="text-sm text-secondary">Generando QR...</span>
-                                </div>
-                            </div>
-                        @endif
+                        <div id="qrcode" class="w-48 h-48 mx-auto flex items-center justify-center"></div>
                     </div>
                 </div>
 
@@ -82,7 +73,7 @@
                     <p class="text-sm text-secondary mb-2">
                         ID de Sesión: <span class="font-mono text-primary" id="session-id">{{ $session->session_code ?? 'Generando...' }}</span>
                     </p>
-                    <button onclick="generateNewQR()" 
+                    <button onclick="generateQRCode()" 
                             class="btn-secondary text-sm px-4 py-2 hover:bg-gray-50 transition-colors duration-150">
                         🔄 Generar Nuevo Código
                     </button>
@@ -310,7 +301,40 @@
         
         // Actualizar una vez al cargar
         updateStats();
+        
+        // Generar QR Code
+        generateQRCode();
     });
+
+    // Función para generar QR Code
+    function generateQRCode() {
+        const sessionCode = '{{ $session->session_code }}';
+        const qrUrl = `{{ url('/session') }}/${sessionCode}`;
+        
+        // Limpiar contenedor
+        const qrContainer = document.getElementById('qrcode');
+        qrContainer.innerHTML = '';
+        
+        // Generar QR usando una API pública
+        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=192x192&data=${encodeURIComponent(qrUrl)}`;
+        
+        const img = document.createElement('img');
+        img.src = qrApiUrl;
+        img.alt = 'Código QR de sesión';
+        img.className = 'w-48 h-48 mx-auto';
+        img.onload = function() {
+            qrContainer.appendChild(img);
+        };
+        img.onerror = function() {
+            // Fallback: mostrar URL como texto
+            qrContainer.innerHTML = `
+                <div class="text-center p-4">
+                    <p class="text-sm text-gray-600 mb-2">Escanea este código:</p>
+                    <p class="text-xs font-mono bg-gray-100 p-2 rounded">${qrUrl}</p>
+                </div>
+            `;
+        };
+    }
 
     // Limpiar interval al salir de la página
     window.addEventListener('beforeunload', function() {

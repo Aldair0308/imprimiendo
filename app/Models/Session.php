@@ -2,13 +2,12 @@
 
 namespace App\Models;
 
-use MongoDB\Laravel\Eloquent\Model;
+use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 
 class Session extends Model
 {
-    protected $connection = 'mongodb';
-    protected $collection = 'sessions';
+    protected $table = 'sessions';
 
     protected $fillable = [
         'qr_code',

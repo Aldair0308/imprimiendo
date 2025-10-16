@@ -29,6 +29,9 @@ Route::get('/privacy', [HomeController::class, 'privacy'])->name('home.privacy')
 Route::prefix('session')->group(function () {
     Route::get('/{sessionCode}', [SessionController::class, 'show'])->name('session.show');
     Route::get('/{sessionCode}/files', [SessionController::class, 'showFiles'])->name('session.files');
+    Route::post('/upload', [SessionController::class, 'upload'])->name('session.upload');
+    Route::post('/remove-file', [SessionController::class, 'removeFile'])->name('session.remove-file');
+    Route::post('/print', [SessionController::class, 'print'])->name('session.print');
 });
 
 // Rutas de impresión

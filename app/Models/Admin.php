@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use MongoDB\Laravel\Eloquent\Model;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Support\Facades\Hash;
@@ -12,8 +12,7 @@ class Admin extends Model implements AuthenticatableContract
 {
     use Authenticatable;
 
-    protected $connection = 'mongodb';
-    protected $collection = 'admins';
+    protected $table = 'admins';
 
     protected $fillable = [
         'name',

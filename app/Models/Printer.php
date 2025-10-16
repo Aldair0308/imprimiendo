@@ -2,13 +2,12 @@
 
 namespace App\Models;
 
-use MongoDB\Laravel\Eloquent\Model;
+use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 
 class Printer extends Model
 {
-    protected $connection = 'mongodb';
-    protected $collection = 'printers';
+    protected $table = 'printers';
 
     protected $fillable = [
         'name',

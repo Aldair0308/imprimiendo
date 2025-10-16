@@ -11,67 +11,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Deshabilitar servicios costosos temporalmente
-        $this->app->bind('App\Services\PrinterMonitorService', function () {
-            return new class extends \App\Services\PrinterMonitorService {
-                public function __construct() {
-                    // No llamar al constructor padre para evitar dependencias
-                }
-                
-                public function checkPrinterStatus($printer) {
-                    return ['status' => 'online', 'queue_count' => 0];
-                }
-                
-                public function monitorAllPrinters() {
-                    return [
-                        'total_printers' => 0,
-                        'online_printers' => 0,
-                        'offline_printers' => 0,
-                        'system_load' => 0
-                    ];
-                }
-                
-                public function getSystemStatus() {
-                    return [
-                        'total_printers' => 0,
-                        'online_printers' => 0,
-                        'offline_printers' => 0,
-                        'system_load' => 0,
-                        'last_check' => now()
-                    ];
-                }
-            };
+        // Registrar servicios sin dependencias circulares
+        $this->app->singleton('App\Services\PrinterMonitorService', function ($app) {
+            return new \App\Services\PrinterMonitorService();
         });
         
-        $this->app->bind('App\Services\MultiPrinterService', function () {
-            return new class extends \App\Services\MultiPrinterService {
-                public function __construct() {
-                    // No llamar al constructor padre para evitar dependencias
-                }
-                
-                public function getAvailablePrinters() {
-                    return [];
-                }
-                
-                public function getSystemStats() {
-                    return [
-                        'total_printers' => 0,
-                        'active_printers' => 0,
-                        'total_jobs' => 0,
-                        'pending_jobs' => 0,
-                        'completed_jobs' => 0,
-                        'failed_jobs' => 0
-                    ];
-                }
-                
-                public function processJobQueue() {
-                    return true;
-                }
-                
-                public function getLoadDistribution() {
-                    return [];
-                }
-            };
+        $this->app->singleton('App\Services\LoadBalancerService', function ($app) {
+            return new \App\Services\LoadBalancerService();
+        });
+        
+        $this->app->singleton('App\Services\MultiPrinterService', function ($app) {
+            return new \App\Services\MultiPrinterService(
+                $app->make('App\Services\LoadBalancerService'),
+                $app->make('App\Services\PrinterMonitorService')
+            );
         });
     }
 

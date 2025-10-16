@@ -37,14 +37,14 @@ class FileService
             
             // Crear registro en base de datos
             $file = File::create([
-                'session_id' => $session->_id,
+                'session_id' => $session->id,
                 'original_name' => $uploadedFile->getClientOriginalName(),
-                'file_name' => $fileName,
+                'stored_name' => $fileName,
                 'file_path' => $filePath,
                 'file_size' => $uploadedFile->getSize(),
+                'file_type' => $uploadedFile->getClientOriginalExtension(),
                 'mime_type' => $uploadedFile->getMimeType(),
-                'extension' => $uploadedFile->getClientOriginalExtension(),
-                'upload_status' => 'completed',
+                'status' => 'uploaded',
                 'uploaded_at' => Carbon::now()
             ]);
             
@@ -52,8 +52,8 @@ class FileService
             $this->analyzeFile($file);
             
             Log::info('File uploaded successfully', [
-                'file_id' => $file->_id,
-                'session_id' => $session->_id,
+                'file_id' => $file->id,
+                'session_id' => $session->id,
                 'original_name' => $uploadedFile->getClientOriginalName(),
                 'file_size' => $uploadedFile->getSize()
             ]);
@@ -62,7 +62,7 @@ class FileService
             
         } catch (\Exception $e) {
             Log::error('Error uploading file: ' . $e->getMessage(), [
-                'session_id' => $session->_id,
+                'session_id' => $session->id,
                 'original_name' => $uploadedFile->getClientOriginalName()
             ]);
             
@@ -141,7 +141,7 @@ class FileService
             
         } catch (\Exception $e) {
             Log::warning('Error analyzing file: ' . $e->getMessage(), [
-                'file_id' => $file->_id
+                'file_id' => $file->id
             ]);
         }
     }
@@ -264,7 +264,7 @@ class FileService
             $file->delete();
             
             Log::info('File deleted successfully', [
-                'file_id' => $file->_id,
+                'file_id' => $file->id,
                 'file_path' => $file->file_path
             ]);
             
@@ -272,7 +272,7 @@ class FileService
             
         } catch (\Exception $e) {
             Log::error('Error deleting file: ' . $e->getMessage(), [
-                'file_id' => $file->_id
+                'file_id' => $file->id
             ]);
             
             return false;
@@ -284,7 +284,7 @@ class FileService
      */
     public function deleteSessionFiles(Session $session)
     {
-        $files = File::where('session_id', $session->_id)->get();
+        $files = File::where('session_id', $session->id)->get();
         $deletedCount = 0;
         
         foreach ($files as $file) {

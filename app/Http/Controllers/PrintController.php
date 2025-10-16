@@ -88,8 +88,8 @@ class PrintController extends Controller
             $totalCost = 0;
             
             foreach ($request->files as $fileConfig) {
-                $file = \App\Models\File::where('_id', $fileConfig['file_id'])
-                                       ->where('session_id', $session->_id)
+                $file = \App\Models\File::where('id', $fileConfig['file_id'])
+                ->where('session_id', $session->id)
                                        ->firstOrFail();
                 
                 // Configurar opciones de impresión
@@ -244,7 +244,7 @@ class PrintController extends Controller
     {
         try {
             $session = $this->sessionService->getSessionByCode($sessionCode);
-            $printJobs = PrintJob::where('session_id', $session->_id)->get();
+            $printJobs = PrintJob::where('session_id', $session->id)->get();
             
             return view('print.status', compact('session', 'printJobs'));
             
@@ -260,7 +260,7 @@ class PrintController extends Controller
     {
         try {
             $session = $this->sessionService->getSessionByCode($sessionCode);
-            $printJobs = PrintJob::where('session_id', $session->_id)->get();
+            $printJobs = PrintJob::where('session_id', $session->id)->get();
             
             $jobsStatus = [];
             foreach ($printJobs as $job) {
@@ -297,8 +297,8 @@ class PrintController extends Controller
     {
         try {
             $session = $this->sessionService->getSessionByCode($sessionCode);
-            $printJob = PrintJob::where('_id', $jobId)
-                               ->where('session_id', $session->_id)
+            $printJob = PrintJob::where('id', $jobId)
+                ->where('session_id', $session->id)
                                ->firstOrFail();
             
             if (in_array($printJob->status, ['completed', 'cancelled'])) {

@@ -281,6 +281,166 @@ class SessionController extends Controller
     }
 
     /**
+     * Subir archivo a la sesión
+     */
+    public function upload(Request $request)
+    {
+        try {
+            $request->validate([
+                'file' => 'required|file|max:51200|mimes:pdf,docx,doc,txt,jpg,jpeg,png',
+                'session_code' => 'required|string'
+            ]);
+
+            $sessionCode = $request->input('session_code');
+            $session = $this->sessionService->getSessionByCode($sessionCode);
+            
+            // Verificar límites de la sesión
+            $limits = $this->sessionService->checkSessionLimits($session);
+            $currentFiles = $this->sessionService->getSessionFiles($session);
+            
+            if ($currentFiles->count() >= $limits['max_files']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Máximo {$limits['max_files']} archivos permitidos"
+                ], 400);
+            }
+            
+            $file = $request->file('file');
+            $uploadedFile = $this->fileService->uploadFile($file, $session);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Archivo subido correctamente',
+                'file' => [
+                    'id' => $uploadedFile->id,
+                    'original_name' => $uploadedFile->original_name,
+                    'file_size' => $uploadedFile->file_size,
+                    'extension' => $uploadedFile->extension
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error uploading file: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al subir el archivo: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Eliminar archivo de la sesión
+     */
+    public function removeFile(Request $request)
+    {
+        try {
+            $request->validate([
+                'file_id' => 'required|string',
+                'session_code' => 'required|string'
+            ]);
+
+            $sessionCode = $request->input('session_code');
+            $fileId = $request->input('file_id');
+            
+            $session = $this->sessionService->getSessionByCode($sessionCode);
+            $result = $this->fileService->deleteFile($fileId, $session);
+            
+            if ($result) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Archivo eliminado correctamente'
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se pudo eliminar el archivo'
+                ], 400);
+            }
+            
+        } catch (\Exception $e) {
+            Log::error('Error removing file: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar el archivo: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Iniciar impresión de la sesión
+     */
+    public function print(Request $request)
+    {
+        try {
+            $request->validate([
+                'session_code' => 'required|string',
+                'printer_id' => 'required|integer',
+                'copies' => 'integer|min:1|max:10',
+                'color_mode' => 'string|in:color,grayscale,bw',
+                'paper_size' => 'string|in:A4,Letter,Legal',
+                'orientation' => 'string|in:portrait,landscape'
+            ]);
+
+            $sessionCode = $request->input('session_code');
+            $session = $this->sessionService->getSessionByCode($sessionCode);
+            
+            // Verificar que hay archivos
+            $files = $this->sessionService->getSessionFiles($session);
+            if ($files->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No hay archivos para imprimir'
+                ], 400);
+            }
+            
+            // Verificar que la impresora existe y está disponible
+            $printer = Printer::where('id', $request->input('printer_id'))
+                             ->where('is_active', true)
+                             ->where('is_available', true)
+                             ->first();
+                             
+            if (!$printer) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Impresora no disponible'
+                ], 400);
+            }
+            
+            // Configuración de impresión
+            $printSettings = [
+                'copies' => $request->input('copies', 1),
+                'color_mode' => $request->input('color_mode', 'color'),
+                'paper_size' => $request->input('paper_size', 'A4'),
+                'orientation' => $request->input('orientation', 'portrait')
+            ];
+            
+            // Crear trabajos de impresión
+            $printJobs = [];
+            foreach ($files as $file) {
+                $printJob = $this->sessionService->createPrintJob($session, $file, $printer, $printSettings);
+                $printJobs[] = $printJob;
+            }
+            
+            // Actualizar estado de la sesión
+            $this->sessionService->updateSessionStatus($session, 'printing');
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Impresión iniciada correctamente',
+                'print_jobs' => count($printJobs),
+                'estimated_time' => count($printJobs) * 2 // 2 minutos por trabajo estimado
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error starting print: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al iniciar la impresión: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Página de configuración de sesión
      */
     public function configure($sessionCode)

@@ -142,8 +142,8 @@ class FileController extends Controller
     {
         try {
             $session = $this->sessionService->getSessionByCode($sessionCode);
-            $file = \App\Models\File::where('_id', $fileId)
-                                   ->where('session_id', $session->_id)
+            $file = \App\Models\File::where('id', $fileId)
+                                   ->where('session_id', $session->id)
                                    ->firstOrFail();
             
             $deleted = $this->fileService->deleteFile($file);
@@ -172,8 +172,8 @@ class FileController extends Controller
     {
         try {
             $session = $this->sessionService->getSessionByCode($sessionCode);
-            $file = \App\Models\File::where('_id', $fileId)
-                                   ->where('session_id', $session->_id)
+            $file = \App\Models\File::where('id', $fileId)
+                                   ->where('session_id', $session->id)
                                    ->firstOrFail();
             
             $fileInfo = $this->fileService->getFileForPrint($file);
@@ -210,8 +210,8 @@ class FileController extends Controller
     {
         try {
             $session = $this->sessionService->getSessionByCode($sessionCode);
-            $file = \App\Models\File::where('_id', $fileId)
-                                   ->where('session_id', $session->_id)
+            $file = \App\Models\File::where('id', $fileId)
+                                   ->where('session_id', $session->id)
                                    ->firstOrFail();
             
             if (!Storage::disk('public')->exists($file->file_path)) {
@@ -235,8 +235,8 @@ class FileController extends Controller
     {
         try {
             $session = $this->sessionService->getSessionByCode($sessionCode);
-            $file = \App\Models\File::where('_id', $fileId)
-                                   ->where('session_id', $session->_id)
+            $file = \App\Models\File::where('id', $fileId)
+                                   ->where('session_id', $session->id)
                                    ->firstOrFail();
             
             if (!Storage::disk('public')->exists($file->file_path)) {

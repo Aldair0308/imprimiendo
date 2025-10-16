@@ -2,13 +2,12 @@
 
 namespace App\Models;
 
-use MongoDB\Laravel\Eloquent\Model;
+use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 
 class PrintJob extends Model
 {
-    protected $connection = 'mongodb';
-    protected $collection = 'print_jobs';
+    protected $table = 'print_jobs';
 
     protected $fillable = [
         'session_id',
