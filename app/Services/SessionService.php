@@ -188,7 +188,7 @@ class SessionService
      */
     public function updateSessionStatus(Session $session, $status, $additionalData = [])
     {
-        $validStatuses = ['active', 'uploading', 'configuring', 'printing', 'completed', 'expired', 'cancelled'];
+        $validStatuses = ['active', 'uploading', 'configuring', 'printing', 'completed', 'expired', 'cancelled', 'logged'];
         
         if (!in_array($status, $validStatuses)) {
             throw new \Exception('Estado de sesión inválido');
@@ -426,5 +426,71 @@ class SessionService
         ]);
         
         return $session->fresh();
+    }
+
+    /**
+     * Crear trabajo de impresión
+     */
+    public function createPrintJob($session, $file, $printer, $printSettings)
+    {
+        try {
+            $printJob = new \App\Models\PrintJob();
+            $printJob->session_id = $session->id;
+            $printJob->file_id = $file->id;
+            $printJob->printer_id = $printer->id;
+            $printJob->status = \App\Models\PrintJob::STATUS_PENDING;
+            $printJob->priority = \App\Models\PrintJob::PRIORITY_NORMAL;
+            $printJob->copies = $printSettings['copies'] ?? 1;
+            $printJob->color_mode = $printSettings['color_mode'] ?? 'color';
+            $printJob->paper_size = $printSettings['paper_size'] ?? 'A4';
+            $printJob->orientation = $printSettings['orientation'] ?? 'portrait';
+            $printJob->total_pages = $file->page_count ?? 1;
+            $printJob->print_settings = $printSettings;
+            $printJob->created_at = Carbon::now();
+            $printJob->save();
+
+            Log::info('Print job created', [
+                'job_id' => $printJob->id,
+                'session_id' => $session->id,
+                'file_id' => $file->id,
+                'printer_id' => $printer->id,
+                'settings' => $printSettings
+            ]);
+
+            return $printJob;
+
+        } catch (\Exception $e) {
+            Log::error('Error creating print job: ' . $e->getMessage());
+            throw new \Exception('Error al crear trabajo de impresión');
+        }
+    }
+
+    /**
+     * Crear log de intento de impresión
+     */
+    public function createPrintLog($session, $file, $printSettings, $metadata = [])
+    {
+        try {
+            $printLog = \App\Models\PrintLog::createPrintAttempt(
+                $session, 
+                $file, 
+                $printSettings, 
+                $metadata
+            );
+
+            Log::info('Print log created', [
+                'log_id' => $printLog->id,
+                'session_id' => $session->id,
+                'file_id' => $file->id,
+                'reason' => $metadata['reason'] ?? 'Unknown',
+                'settings' => $printSettings
+            ]);
+
+            return $printLog;
+
+        } catch (\Exception $e) {
+            Log::error('Error creating print log: ' . $e->getMessage());
+            throw new \Exception('Error al crear log de impresión');
+        }
     }
 }

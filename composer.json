@@ -21,7 +21,7 @@
         "php": "^8.2",
         "laravel/framework": "^11.9",
         "laravel/tinker": "^2.9",
-        "jenssegers/mongodb": "^4.3",
+        "mongodb/laravel-mongodb": "^4.7",
         "endroid/qr-code": "^5.0",
         "intervention/image": "^3.7",
         "spatie/laravel-permission": "^6.9",

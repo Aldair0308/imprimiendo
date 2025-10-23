@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\Model;
 use Carbon\Carbon;
 
 class PrintJob extends Model
 {
-    protected $table = 'print_jobs';
+    protected $connection = 'mongodb';
+    protected $collection = 'print_jobs';
 
     protected $fillable = [
         'session_id',
@@ -39,6 +40,8 @@ class PrintJob extends Model
         'total_pages' => 'integer',
         'cost' => 'decimal:2',
         'retry_count' => 'integer',
+        'priority' => 'integer',
+        'duplex' => 'boolean',
         'print_settings' => 'array'
     ];
 

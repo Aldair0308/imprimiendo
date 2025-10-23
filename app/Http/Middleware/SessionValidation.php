@@ -76,7 +76,7 @@ class SessionValidation
      */
     private function isSessionValid(Session $session): bool
     {
-        $validStatuses = ['active', 'uploading', 'configuring', 'ready'];
+        $validStatuses = ['active', 'uploading', 'configuring', 'ready', 'printing', 'logged'];
         return in_array($session->status, $validStatuses);
     }
 

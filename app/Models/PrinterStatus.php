@@ -2,27 +2,32 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\Model;
 use Carbon\Carbon;
 
 class PrinterStatus extends Model
 {
-    protected $table = 'printer_statuses';
+    protected $connection = 'mongodb';
+    protected $collection = 'printer_statuses';
 
     protected $fillable = [
         'printer_id',
-        'status',
-        'message',
-        'timestamp',
-        'response_time',
-        'error_code',
-        'additional_data'
+        'is_online',
+        'paper_level',
+        'ink_level',
+        'temperature',
+        'last_check',
+        'error_count',
+        'status_message'
     ];
 
     protected $casts = [
-        'timestamp' => 'datetime',
-        'response_time' => 'integer',
-        'additional_data' => 'array'
+        'last_check' => 'datetime',
+        'is_online' => 'boolean',
+        'paper_level' => 'integer',
+        'ink_level' => 'integer',
+        'temperature' => 'integer',
+        'error_count' => 'integer'
     ];
 
     // Estados posibles

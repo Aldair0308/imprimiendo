@@ -374,11 +374,14 @@ class SessionController extends Controller
         try {
             $request->validate([
                 'session_code' => 'required|string',
-                'printer_id' => 'required|integer',
-                'copies' => 'integer|min:1|max:10',
-                'color_mode' => 'string|in:color,grayscale,bw',
-                'paper_size' => 'string|in:A4,Letter,Legal',
-                'orientation' => 'string|in:portrait,landscape'
+                'printer_id' => 'nullable|integer',
+                'print_jobs' => 'required|array',
+                'print_jobs.*.file_id' => 'required|string',
+                'print_jobs.*.file_name' => 'required|string',
+                'print_jobs.*.copies' => 'integer|min:1|max:10',
+                'print_jobs.*.color_mode' => 'string|in:color,grayscale,bw',
+                'print_jobs.*.paper_size' => 'string|in:A4,Letter,Legal',
+                'print_jobs.*.orientation' => 'string|in:portrait,landscape'
             ]);
 
             $sessionCode = $request->input('session_code');
@@ -393,42 +396,85 @@ class SessionController extends Controller
                 ], 400);
             }
             
-            // Verificar que la impresora existe y está disponible
-            $printer = Printer::where('id', $request->input('printer_id'))
-                             ->where('is_active', true)
-                             ->where('is_available', true)
-                             ->first();
-                             
-            if (!$printer) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Impresora no disponible'
-                ], 400);
+            $printerId = $request->input('printer_id');
+            $printer = null;
+            
+            // Si se especifica impresora, verificar que existe y está disponible
+            if ($printerId) {
+                $printer = Printer::where('id', $printerId)
+                                 ->where('is_active', true)
+                                 ->where('is_available', true)
+                                 ->first();
+                                 
+                if (!$printer) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Impresora no disponible'
+                    ], 400);
+                }
             }
             
-            // Configuración de impresión
-            $printSettings = [
-                'copies' => $request->input('copies', 1),
-                'color_mode' => $request->input('color_mode', 'color'),
-                'paper_size' => $request->input('paper_size', 'A4'),
-                'orientation' => $request->input('orientation', 'portrait')
-            ];
+            $printJobs = $request->input('print_jobs');
+            $createdJobs = [];
             
-            // Crear trabajos de impresión
-            $printJobs = [];
-            foreach ($files as $file) {
-                $printJob = $this->sessionService->createPrintJob($session, $file, $printer, $printSettings);
-                $printJobs[] = $printJob;
+            // Crear trabajos de impresión individuales con configuración específica
+            foreach ($printJobs as $jobData) {
+                // Buscar el archivo en la sesión
+                $file = $files->where('id', $jobData['file_id'])->first();
+                if (!$file) {
+                    continue; // Skip si el archivo no existe
+                }
+                
+                $printSettings = [
+                    'copies' => $jobData['copies'] ?? 1,
+                    'color_mode' => $jobData['color_mode'] ?? 'color',
+                    'paper_size' => $jobData['paper_size'] ?? 'A4',
+                    'orientation' => $jobData['orientation'] ?? 'portrait'
+                ];
+                
+                // Si no hay impresora disponible, crear log de intento de impresión
+                if (!$printer) {
+                    $logEntry = $this->sessionService->createPrintLog($session, $file, $printSettings, [
+                        'reason' => 'No printer available',
+                        'attempted_at' => now(),
+                        'file_name' => $jobData['file_name'],
+                        'session_code' => $sessionCode
+                    ]);
+                    
+                    $createdJobs[] = [
+                        'type' => 'log',
+                        'file_name' => $jobData['file_name'],
+                        'settings' => $printSettings,
+                        'log_id' => $logEntry->id ?? 'created'
+                    ];
+                } else {
+                    // Crear trabajo de impresión real
+                    $printJob = $this->sessionService->createPrintJob($session, $file, $printer, $printSettings);
+                    $createdJobs[] = [
+                        'type' => 'print_job',
+                        'file_name' => $jobData['file_name'],
+                        'settings' => $printSettings,
+                        'job_id' => $printJob->id ?? 'created'
+                    ];
+                }
             }
             
             // Actualizar estado de la sesión
-            $this->sessionService->updateSessionStatus($session, 'printing');
+            if ($printer) {
+                $this->sessionService->updateSessionStatus($session, 'printing');
+                $message = 'Impresión iniciada correctamente';
+            } else {
+                $this->sessionService->updateSessionStatus($session, 'logged');
+                $message = 'Solicitud de impresión registrada (sin impresoras disponibles)';
+            }
             
             return response()->json([
                 'success' => true,
-                'message' => 'Impresión iniciada correctamente',
-                'print_jobs' => count($printJobs),
-                'estimated_time' => count($printJobs) * 2 // 2 minutos por trabajo estimado
+                'message' => $message,
+                'print_jobs' => count($createdJobs),
+                'jobs_details' => $createdJobs,
+                'has_printer' => $printer !== null,
+                'estimated_time' => count($createdJobs) * 2 // 2 minutos por trabajo estimado
             ]);
             
         } catch (\Exception $e) {

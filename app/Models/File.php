@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\Model;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 
 class File extends Model
 {
-    protected $table = 'files';
+    protected $connection = 'mongodb';
+    protected $collection = 'files';
 
     protected $fillable = [
         'original_name',

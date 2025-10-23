@@ -2,31 +2,41 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\Model;
 use Carbon\Carbon;
 
 class Session extends Model
 {
-    protected $table = 'sessions';
+    protected $connection = 'mongodb';
+    protected $collection = 'sessions';
 
     protected $fillable = [
-        'qr_code',
+        'session_code',
         'status',
-        'created_at',
+        'client_ip',
         'expires_at',
-        'files',
-        'total_cost',
-        'print_settings',
-        'user_ip',
-        'user_agent'
+        'max_files',
+        'max_total_size',
+        'qr_generated',
+        'qr_code_path',
+        'qr_code_url',
+        'qr_generated_at',
+        'created_at',
+        'updated_at'
     ];
+
+    // Especificar que no use incrementing ID ya que MongoDB usa _id
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     protected $casts = [
         'created_at' => 'datetime',
         'expires_at' => 'datetime',
-        'files' => 'array',
-        'print_settings' => 'array',
-        'total_cost' => 'decimal:2'
+        'qr_generated_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'max_files' => 'integer',
+        'max_total_size' => 'integer',
+        'qr_generated' => 'boolean'
     ];
 
     // Estados posibles de la sesión
@@ -42,7 +52,7 @@ class Session extends Model
     {
         do {
             $qrCode = strtoupper(substr(md5(uniqid(rand(), true)), 0, 8));
-        } while (self::where('qr_code', $qrCode)->exists());
+        } while (self::where('session_code', $qrCode)->exists());
 
         return $qrCode;
     }

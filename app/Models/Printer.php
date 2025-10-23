@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\Model;
 use Carbon\Carbon;
 
 class Printer extends Model
 {
-    protected $table = 'printers';
+    protected $connection = 'mongodb';
+    protected $collection = 'printers';
 
     protected $fillable = [
         'name',
@@ -16,6 +17,7 @@ class Printer extends Model
         'port',
         'status',
         'is_active',
+        'is_available',
         'capabilities',
         'location',
         'description',
@@ -26,20 +28,24 @@ class Printer extends Model
         'last_job_completed',
         'error_count',
         'maintenance_mode',
+        'last_maintenance',
         'created_at',
         'updated_at'
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_available' => 'boolean',
         'maintenance_mode' => 'boolean',
         'capabilities' => 'array',
         'max_queue_size' => 'integer',
         'current_queue_size' => 'integer',
         'total_jobs_printed' => 'integer',
         'error_count' => 'integer',
+        'port' => 'integer',
         'last_health_check' => 'datetime',
         'last_job_completed' => 'datetime',
+        'last_maintenance' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];
