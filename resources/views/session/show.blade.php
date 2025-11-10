@@ -111,10 +111,7 @@
 
                     <!-- File Drop Zone -->
                     <div class="file-drop-zone rounded-lg p-8 text-center mb-6" 
-                         id="file-drop-zone"
-                         ondrop="handleFileDrop(event)" 
-                         ondragover="handleDragOver(event)"
-                         ondragleave="handleDragLeave(event)">
+                         id="file-drop-zone">
                         
                         <div class="mb-4">
                             <svg class="w-12 h-12 text-muted mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -133,8 +130,7 @@
                                id="file-input" 
                                multiple 
                                accept=".pdf,.docx,.doc,.txt,.jpg,.jpeg,.png"
-                               class="hidden"
-                               onchange="handleFileSelect(event)">
+                               class="hidden">
                         
                         <button onclick="document.getElementById('file-input').click()" 
                                 class="btn btn-primary">
@@ -379,6 +375,76 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Print Logs Section -->
+                @if($printLogs->count() > 0)
+                <div class="card">
+                    <h2 class="text-xl font-semibold text-primary mb-6">
+                        📋 Historial de Impresiones
+                    </h2>
+                    
+                    <div class="space-y-3">
+                        @foreach($printLogs as $log)
+                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-2 mb-2">
+                                        <h3 class="font-medium text-primary">{{ $log->file_name }}</h3>
+                                        <span class="px-2 py-1 text-xs rounded-full 
+                                            @if($log->reason === 'No printer available') 
+                                                bg-yellow-100 text-yellow-800
+                                            @else 
+                                                bg-blue-100 text-blue-800
+                                            @endif">
+                                            {{ $log->reason }}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-secondary">
+                                        <div>
+                                            <span class="font-medium">Copias:</span>
+                                            {{ $log->print_settings['copies'] ?? 1 }}
+                                        </div>
+                                        <div>
+                                            <span class="font-medium">Color:</span>
+                                            @php
+                                                $colorMode = $log->print_settings['color_mode'] ?? 'color';
+                                                $colorLabels = [
+                                                    'color' => 'A Color',
+                                                    'grayscale' => 'Escala de Grises',
+                                                    'bw' => 'Blanco y Negro'
+                                                ];
+                                            @endphp
+                                            {{ $colorLabels[$colorMode] ?? $colorMode }}
+                                        </div>
+                                        <div>
+                                            <span class="font-medium">Papel:</span>
+                                            {{ $log->print_settings['paper_size'] ?? 'A4' }}
+                                        </div>
+                                        <div>
+                                            <span class="font-medium">Orientación:</span>
+                                            @php
+                                                $orientation = $log->print_settings['orientation'] ?? 'portrait';
+                                                $orientationLabels = [
+                                                    'portrait' => 'Vertical',
+                                                    'landscape' => 'Horizontal'
+                                                ];
+                                            @endphp
+                                            {{ $orientationLabels[$orientation] ?? $orientation }}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-right text-sm text-muted">
+                                    <div>{{ $log->attempted_at->format('d/m/Y') }}</div>
+                                    <div>{{ $log->attempted_at->format('H:i:s') }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
 
                 <!-- Action Buttons -->
                 <div class="space-y-4">

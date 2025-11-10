@@ -123,9 +123,9 @@
                                   {{ request()->routeIs('admin.dashboard') ? 'text-white border-b-2 border-primary-blue' : '' }}">
                             Dashboard
                         </a>
-                        <a href="{{ route('admin.printers.index') }}" 
+                        <a href="{{ route('admin.printers') }}" 
                            class="text-gray-300 hover:text-white transition-colors duration-150 font-medium
-                                  {{ request()->routeIs('admin.printers.*') ? 'text-white border-b-2 border-primary-blue' : '' }}">
+                                  {{ request()->routeIs('admin.printers') ? 'text-white border-b-2 border-primary-blue' : '' }}">
                             Impresoras
                         </a>
                         <a href="{{ route('admin.sessions') }}" 

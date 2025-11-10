@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Services\SessionService;
 use App\Services\FileService;
 use App\Models\Printer;
+use App\Models\File;
+use App\Models\PrintLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -38,6 +40,11 @@ class SessionController extends Controller
             // Obtener archivos de la sesión
             $files = $this->sessionService->getSessionFiles($session);
             
+            // Obtener logs de impresión de la sesión
+            $printLogs = PrintLog::where('session_id', $session->id)
+                                ->orderBy('attempted_at', 'desc')
+                                ->get();
+            
             // Verificar límites de la sesión
             $limits = $this->sessionService->checkSessionLimits($session);
             
@@ -45,6 +52,7 @@ class SessionController extends Controller
                 'session' => $session,
                 'availablePrinters' => $availablePrinters,
                 'files' => $files,
+                'printLogs' => $printLogs,
                 'limits' => $limits
             ]);
             

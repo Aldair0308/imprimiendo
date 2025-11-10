@@ -175,18 +175,18 @@
             <!-- Username Field -->
             <div class="login-form-group">
                 <label for="username" class="block text-sm font-medium text-primary mb-2">
-                    👤 Usuario Administrativo
+                    📧 Email Administrativo
                 </label>
                 <div class="relative">
-                    <input type="text" 
+                    <input type="email" 
                            id="username" 
                            name="username" 
                            required
-                           autocomplete="username"
+                           autocomplete="email"
                            class="login-input w-full px-4 py-3 rounded-lg pl-12 text-primary placeholder-gray-400"
-                           placeholder="Ingresa tu usuario">
+                           placeholder="Ingresa tu email">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span class="text-gray-400 text-lg">👤</span>
+                        <span class="text-gray-400 text-lg">📧</span>
                     </div>
                 </div>
             </div>
@@ -320,9 +320,9 @@
         <form id="forgot-password-form" onsubmit="handleForgotPassword(event)" class="space-y-4">
             <div>
                 <label for="forgot-username" class="block text-sm font-medium text-primary mb-2">
-                    Usuario Administrativo
+                    Email Administrativo
                 </label>
-                <input type="text" 
+                <input type="email" 
                        id="forgot-username" 
                        name="username" 
                        required
@@ -418,7 +418,7 @@
         const rememberedUser = localStorage.getItem('admin_remember');
         if (rememberedUser) {
             const userData = JSON.parse(rememberedUser);
-            document.getElementById('username').value = userData.username;
+            document.getElementById('username').value = userData.email;
             document.getElementById('remember').checked = true;
         }
     }
@@ -440,8 +440,8 @@
             return;
         }
         
-        if (username.length < 3) {
-            showError('El usuario debe tener al menos 3 caracteres');
+        if (!username.includes('@')) {
+            showError('Por favor ingresa un email válido');
             return;
         }
         
@@ -458,7 +458,7 @@
             // Simular delay de autenticación
             await new Promise(resolve => setTimeout(resolve, 1500));
             
-            const response = await fetch('/api/admin/login', {
+            const response = await fetch('/admin/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -477,7 +477,7 @@
                 // Guardar sesión si se seleccionó recordar
                 if (remember) {
                     localStorage.setItem('admin_remember', JSON.stringify({
-                        username: username,
+                        email: username,
                         timestamp: Date.now()
                     }));
                 } else {

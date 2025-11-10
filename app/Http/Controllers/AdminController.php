@@ -46,13 +46,25 @@ class AdminController extends Controller
         ]);
         
         try {
-            $admin = Admin::where('username', $request->username)->first();
+            $admin = Admin::where('email', $request->username)->first();
             
             if (!$admin || !Hash::check($request->password, $admin->password)) {
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Credenciales incorrectas'
+                    ], 401);
+                }
                 return back()->withErrors(['login' => 'Credenciales incorrectas']);
             }
             
             if (!$admin->is_active) {
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Cuenta desactivada'
+                    ], 401);
+                }
                 return back()->withErrors(['login' => 'Cuenta desactivada']);
             }
             
@@ -61,12 +73,28 @@ class AdminController extends Controller
             $admin->save();
             
             // Crear sesión administrativa
-            session(['admin_id' => $admin->_id, 'admin_username' => $admin->username]);
+            session(['admin_id' => $admin->_id, 'admin_email' => $admin->email]);
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Login exitoso',
+                    'redirect_url' => route('admin.dashboard')
+                ]);
+            }
             
             return redirect()->route('admin.dashboard');
             
         } catch (\Exception $e) {
             Log::error('Admin login error: ' . $e->getMessage());
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error en el sistema'
+                ], 500);
+            }
+            
             return back()->withErrors(['login' => 'Error en el sistema']);
         }
     }
@@ -420,6 +448,25 @@ class AdminController extends Controller
                 'success' => false,
                 'message' => 'Error al actualizar configuración'
             ], 400);
+        }
+    }
+
+    /**
+     * Gestión de sesiones
+     */
+    public function sessions()
+    {
+        try {
+            $sessions = Session::select(['_id', 'session_code', 'status', 'created_at', 'expires_at', 'total_cost'])
+                              ->orderBy('created_at', 'desc')
+                              ->limit(50)
+                              ->get();
+            
+            return view('admin.sessions', compact('sessions'));
+            
+        } catch (\Exception $e) {
+            Log::error('Admin sessions error: ' . $e->getMessage());
+            return view('admin.sessions')->with('error', 'Error al cargar sesiones');
         }
     }
 

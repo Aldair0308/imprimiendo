@@ -52,6 +52,7 @@ Route::prefix('admin')->group(function () {
     Route::middleware('admin.auth')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
         Route::get('/printers', [AdminController::class, 'printers'])->name('admin.printers');
+        Route::get('/sessions', [AdminController::class, 'sessions'])->name('admin.sessions');
         Route::get('/jobs', [AdminController::class, 'jobs'])->name('admin.jobs');
         Route::get('/reports', [AdminController::class, 'reports'])->name('admin.reports');
         Route::get('/settings', [AdminController::class, 'settings'])->name('admin.settings');
